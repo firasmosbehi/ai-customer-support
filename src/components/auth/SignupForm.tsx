@@ -13,12 +13,10 @@ export const SignupForm = () => {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [message, setMessage] = useState<string | null>(null);
 
   const onSubmit = async (formData: FormData) => {
     setIsSubmitting(true);
     setError(null);
-    setMessage(null);
 
     const email = String(formData.get("email") ?? "").trim();
     const password = String(formData.get("password") ?? "");
@@ -46,14 +44,13 @@ export const SignupForm = () => {
       return;
     }
 
-    setMessage("Check your email to confirm your account, then continue onboarding.");
-    setIsSubmitting(false);
+    router.push(`/verify-email?email=${encodeURIComponent(email)}`);
+    router.refresh();
   };
 
   const onGoogleSignIn = async () => {
     setIsSubmitting(true);
     setError(null);
-    setMessage(null);
     const supabase = createSupabaseBrowserClient();
 
     const { error: oauthError } = await supabase.auth.signInWithOAuth({
@@ -110,7 +107,6 @@ export const SignupForm = () => {
         />
 
         {error ? <p className="text-sm text-rose-600">{error}</p> : null}
-        {message ? <p className="text-sm text-emerald-700">{message}</p> : null}
 
         <Button disabled={isSubmitting} type="submit" className="w-full">
           {isSubmitting ? "Creating account..." : "Sign up"}
