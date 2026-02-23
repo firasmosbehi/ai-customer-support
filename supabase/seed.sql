@@ -1,0 +1,2 @@
+-- Seed file intentionally kept minimal for Phase 1.
+-- Add organization/member/documents fixtures here for local development.
