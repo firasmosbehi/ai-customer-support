@@ -8,15 +8,16 @@ import { Button } from "@/components/ui/button";
 
 interface LoginFormProps {
   nextPath: string;
+  initialError?: string;
 }
 
 /**
  * Handles email/password and Google OAuth sign-in flows.
  */
-export const LoginForm = ({ nextPath }: LoginFormProps) => {
+export const LoginForm = ({ nextPath, initialError }: LoginFormProps) => {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(initialError ?? null);
 
   const onSubmit = async (formData: FormData) => {
     setIsSubmitting(true);

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { isEmailConfirmationLinkError } from "@/lib/authErrors";
 
 /**
  * Handles auth errors returned in URL hash fragments (not visible to server components).
@@ -21,14 +22,18 @@ export const AuthHashErrorRedirect = () => {
     }
 
     const redirectParams = new URLSearchParams();
-    redirectParams.set("error", params.get("error_code") ?? error);
+    const effectiveErrorCode = params.get("error_code") ?? error;
+    redirectParams.set("error", effectiveErrorCode);
 
     const description = params.get("error_description");
     if (description) {
       redirectParams.set("message", description);
     }
 
-    window.location.replace(`/verify-email?${redirectParams.toString()}`);
+    const isEmailError = isEmailConfirmationLinkError(effectiveErrorCode, description);
+    const targetPath = isEmailError ? "/verify-email" : "/login";
+
+    window.location.replace(`${targetPath}?${redirectParams.toString()}`);
   }, []);
 
   return null;

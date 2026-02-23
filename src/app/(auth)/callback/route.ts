@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { isEmailConfirmationLinkError } from "@/lib/authErrors";
 
 /**
  * Exchanges Supabase OAuth/email confirmation code for a session cookie.
@@ -14,19 +15,26 @@ export const GET = async (request: NextRequest) => {
 
   try {
     if (authError) {
-      const verifyEmailUrl = new URL("/verify-email", request.url);
+      const effectiveErrorCode = authErrorCode ?? authError;
+      const isEmailError = isEmailConfirmationLinkError(effectiveErrorCode, authErrorDescription);
 
-      if (authErrorCode) {
-        verifyEmailUrl.searchParams.set("error", authErrorCode);
-      } else {
-        verifyEmailUrl.searchParams.set("error", authError);
+      if (isEmailError) {
+        const verifyEmailUrl = new URL("/verify-email", request.url);
+        verifyEmailUrl.searchParams.set("error", effectiveErrorCode);
+
+        if (authErrorDescription) {
+          verifyEmailUrl.searchParams.set("message", authErrorDescription);
+        }
+
+        return NextResponse.redirect(verifyEmailUrl);
       }
 
+      const loginUrl = new URL("/login", request.url);
+      loginUrl.searchParams.set("error", "oauth_failed");
       if (authErrorDescription) {
-        verifyEmailUrl.searchParams.set("message", authErrorDescription);
+        loginUrl.searchParams.set("message", authErrorDescription);
       }
-
-      return NextResponse.redirect(verifyEmailUrl);
+      return NextResponse.redirect(loginUrl);
     }
 
     const supabase = await createSupabaseServerClient();

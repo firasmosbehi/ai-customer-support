@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AuthHashErrorRedirect } from "@/components/auth/AuthHashErrorRedirect";
+import { isEmailConfirmationLinkError } from "@/lib/authErrors";
 
 const getParam = (value: string | string[] | undefined): string | undefined => {
   if (Array.isArray(value)) {
@@ -24,14 +25,20 @@ export default function HomePage({ searchParams }: HomePageProps) {
   const authErrorDescription = getParam(searchParams?.error_description);
 
   if (authError) {
+    const effectiveErrorCode = authErrorCode ?? authError;
+    const isEmailError = isEmailConfirmationLinkError(effectiveErrorCode, authErrorDescription);
     const params = new URLSearchParams();
-    params.set("error", authErrorCode ?? authError);
+    params.set("error", effectiveErrorCode);
 
     if (authErrorDescription) {
       params.set("message", authErrorDescription);
     }
 
-    redirect(`/verify-email?${params.toString()}`);
+    if (isEmailError) {
+      redirect(`/verify-email?${params.toString()}`);
+    }
+
+    redirect(`/login?${params.toString()}`);
   }
 
   return (
