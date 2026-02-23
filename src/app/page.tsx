@@ -1,8 +1,42 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
+import { AuthHashErrorRedirect } from "@/components/auth/AuthHashErrorRedirect";
 
-export default function HomePage() {
+const getParam = (value: string | string[] | undefined): string | undefined => {
+  if (Array.isArray(value)) {
+    return value[0];
+  }
+
+  return value;
+};
+
+interface HomePageProps {
+  searchParams?: {
+    error?: string | string[];
+    error_code?: string | string[];
+    error_description?: string | string[];
+  };
+}
+
+export default function HomePage({ searchParams }: HomePageProps) {
+  const authError = getParam(searchParams?.error);
+  const authErrorCode = getParam(searchParams?.error_code);
+  const authErrorDescription = getParam(searchParams?.error_description);
+
+  if (authError) {
+    const params = new URLSearchParams();
+    params.set("error", authErrorCode ?? authError);
+
+    if (authErrorDescription) {
+      params.set("message", authErrorDescription);
+    }
+
+    redirect(`/verify-email?${params.toString()}`);
+  }
+
   return (
     <main className="mx-auto flex min-h-screen max-w-5xl flex-col items-start justify-center px-6 py-20">
+      <AuthHashErrorRedirect />
       <p className="rounded-full bg-slate-900 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-white">
         Phase 1 Foundation
       </p>
