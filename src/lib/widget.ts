@@ -218,3 +218,22 @@ export const buildCorsHeaders = (origin: string | null, allowOrigin: boolean): H
     Vary: "Origin",
   };
 };
+
+/**
+ * Checks whether Supabase is configured for a non-local runtime environment.
+ */
+export const isRemoteSupabaseConfigured = (): boolean => {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!supabaseUrl || !serviceRoleKey) {
+    return false;
+  }
+
+  try {
+    const hostname = new URL(supabaseUrl).hostname.toLowerCase();
+    return hostname !== "localhost" && hostname !== "127.0.0.1";
+  } catch {
+    return false;
+  }
+};

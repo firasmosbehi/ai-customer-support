@@ -9,6 +9,7 @@ import { chatRequestSchema } from "@/lib/validators";
 import {
   buildCorsHeaders,
   buildPublicWidgetConfig,
+  isRemoteSupabaseConfigured,
   isOriginAllowed,
   resolveOrganizationByIdentifier,
   resolveToneSetting,
@@ -354,6 +355,13 @@ export const OPTIONS = async (request: NextRequest) => {
   }
 
   try {
+    if (!isRemoteSupabaseConfigured()) {
+      return NextResponse.json(
+        { error: "Supabase is not configured for production", code: "BACKEND_NOT_CONFIGURED" },
+        { status: 503, headers: buildCorsHeaders(origin, false) }
+      );
+    }
+
     const supabase = createSupabaseAdminClient();
     const organization = await resolveOrganizationByIdentifier(supabase, orgIdentifier);
 
@@ -385,8 +393,8 @@ export const OPTIONS = async (request: NextRequest) => {
   } catch (error) {
     console.error("Chat preflight failed", error);
     return NextResponse.json(
-      { error: "Internal server error", code: "INTERNAL_ERROR" },
-      { status: 500, headers: buildCorsHeaders(origin, false) }
+      { error: "Backend service unavailable", code: "BACKEND_UNAVAILABLE" },
+      { status: 503, headers: buildCorsHeaders(origin, false) }
     );
   }
 };
@@ -399,6 +407,13 @@ export const POST = async (request: NextRequest) => {
   const userAgent = request.headers.get("user-agent");
 
   try {
+    if (!isRemoteSupabaseConfigured()) {
+      return NextResponse.json(
+        { error: "Supabase is not configured for production", code: "BACKEND_NOT_CONFIGURED" },
+        { status: 503, headers: buildCorsHeaders(origin, false) }
+      );
+    }
+
     const rawBody = await request.json().catch(() => null);
     const parsedBody = chatRequestSchema.safeParse(rawBody);
 
@@ -641,8 +656,8 @@ export const POST = async (request: NextRequest) => {
   } catch (error) {
     console.error("Chat route failed", error);
     return NextResponse.json(
-      { error: "Internal server error", code: "INTERNAL_ERROR" },
-      { status: 500, headers: buildCorsHeaders(origin, false) }
+      { error: "Backend service unavailable", code: "BACKEND_UNAVAILABLE" },
+      { status: 503, headers: buildCorsHeaders(origin, false) }
     );
   }
 };

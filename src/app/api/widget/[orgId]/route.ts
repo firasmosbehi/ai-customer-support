@@ -3,6 +3,7 @@ import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import {
   buildCorsHeaders,
   buildPublicWidgetConfig,
+  isRemoteSupabaseConfigured,
   isOriginAllowed,
   resolveOrganizationByIdentifier,
   resolveWidgetConfigForOrganization,
@@ -18,6 +19,13 @@ export const GET = async (
   const origin = request.headers.get("origin");
 
   try {
+    if (!isRemoteSupabaseConfigured()) {
+      return NextResponse.json(
+        { error: "Supabase is not configured for production", code: "BACKEND_NOT_CONFIGURED" },
+        { status: 503, headers: buildCorsHeaders(origin, false) }
+      );
+    }
+
     const supabase = createSupabaseAdminClient();
     const organization = await resolveOrganizationByIdentifier(supabase, context.params.orgId);
 
@@ -63,7 +71,10 @@ export const GET = async (
     );
   } catch (error) {
     console.error("Widget config route failed", error);
-    return NextResponse.json({ error: "Internal server error", code: "INTERNAL_ERROR" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Backend service unavailable", code: "BACKEND_UNAVAILABLE" },
+      { status: 503, headers: buildCorsHeaders(origin, false) }
+    );
   }
 };
 
