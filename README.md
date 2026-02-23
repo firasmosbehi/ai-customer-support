@@ -34,6 +34,22 @@ cp .env.local.example .env.local
 
 Fill in your Supabase, Stripe, Anthropic, OpenAI, and Resend credentials.
 
+### Google OAuth setup (Supabase)
+
+If you want "Continue with Google" to work:
+- Create OAuth credentials in Google Cloud Console.
+- Add this redirect URI in Google OAuth config:
+  - `https://<your-supabase-project-ref>.supabase.co/auth/v1/callback`
+- Set the local variables used by `supabase/config.toml`:
+  - `SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID`
+  - `SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET`
+- Push auth config to hosted Supabase:
+
+```bash
+npx supabase login
+npx supabase config push --project-ref <your-supabase-project-ref>
+```
+
 ## 3. Run local Supabase and migrations
 
 ```bash
