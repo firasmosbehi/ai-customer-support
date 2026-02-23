@@ -13,6 +13,13 @@ Phase 2 core is now started:
 - Retrieval test API (`/api/knowledge-base/test`) and dashboard retrieval tester UI
 - AI helpers for chunking, embeddings, RAG retrieval, and classification scaffolding
 
+Phase 3 core is now started:
+- Public chat API (`/api/chat`) with streaming responses via Vercel AI SDK + Anthropic
+- Intent classification (Claude Haiku) and escalation creation for complaint/human-handoff intents
+- Conversation continuity via `visitor_id` + conversation lookup/creation
+- Public widget config API (`/api/widget/[orgId]`) with domain allowlist checks
+- Standalone embeddable widget bundle built to `public/widget.js` with Shadow DOM and streaming UI
+
 ## 1. Install dependencies
 
 ```bash
@@ -80,8 +87,26 @@ Set all `sync: false` keys from `render.yaml` in Render:
 render blueprints validate render.yaml
 ```
 
+## Widget build
+
+```bash
+npx pnpm build:widget
+```
+
+Embed snippet:
+
+```html
+<script src="https://yourdomain.com/widget.js" data-org-id="your-org-id"></script>
+```
+
+Optional API host override:
+
+```html
+<script src="https://your-cdn/widget.js" data-org-id="your-org-id" data-api-base="https://your-app-domain"></script>
+```
+
 ## Phase status
 
 - Phase 1: Completed
 - Phase 2: In progress (ingestion + retrieval test implemented)
-- Phase 3+: Pending
+- Phase 3: In progress (chat endpoint + widget foundation implemented)

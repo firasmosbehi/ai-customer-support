@@ -17,3 +17,11 @@ export const signInSchema = z.object({
 export const signUpSchema = signInSchema.extend({
   fullName: z.string().min(2).max(80),
 });
+
+export const chatRequestSchema = z.object({
+  org_id: z.string().min(2).max(120),
+  visitor_id: z.string().min(2).max(120),
+  conversation_id: z.string().uuid().optional(),
+  message: z.string().min(1).max(4000),
+  metadata: z.record(z.unknown()).optional(),
+});
